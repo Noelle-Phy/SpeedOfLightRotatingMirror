@@ -1,0 +1,71 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import statistics
+from scipy.optimize import curve_fit
+
+d1 = 0.07
+d2 = np.sqrt(((4.49 + 0.205 + 0.195) ** 2) + ((0.005) ** 2))
+d3 = np.sqrt(((4.49 + 0.265 + 0.195) ** 2))
+d4 = np.sqrt(((0.18) ** 2) + ((0.01) ** 2))
+d5 = 0.12
+d6 = np.sqrt(((4.49 + 0.465 + 0.004) ** 2) + ((0.055) ** 2))
+d7 = np.sqrt(((4.49 + 0.004 + 0.15) ** 2) + ((0.045) ** 2))
+
+fl = d3
+ad = d1 + d2
+bd = d4 + d5 + d6 + d7
+
+print(fl)
+print(a)
+print(b)
+
+f = [1049.0, 964.0, 870.0, 786.0, 678.0, 567.0, 349.0, 156.0]
+x = [6.85, 6.2, 5.6, 5.05, 4.55, 3.4, 2.15, 1.05]
+plt.plot(f, x)
+plt.xlabel("Mirror Rotation Frequency (Hz)")
+plt.ylabel("Displacement (mm)")
+plt.show()
+plt.close()
+
+def line(x, a, b):
+    y = a * x + b
+    return y
+
+popt, pcov = curve_fit(line, f, x)
+a = popt[0]
+b = popt[1]
+perr = np.sqrt(np.diag(pcov))
+aerr = perr[0]
+berr = perr[1]
+plt.scatter(f, x, color = 'black', label = 'Data')
+xvals = np.linspace(100, 1100, 100)
+plt.plot(xvals, line(xvals, a, b), color = 'red', label = 'Line Fit')
+plt.xlabel("Mirror Rotation Frequency (Hz)")
+plt.ylabel("Displacement (mm)")
+plt.legend()
+plt.savefig("Rotation_Frequency_vs_Displacement")
+plt.show()
+plt.close()
+
+cspeeds = []
+x_i = 0
+f_i = 0
+for i in range(len(f)):
+    x_i = x[i]
+    f_i = f[i]
+    cspeeds = np.append(cspeeds, (fl + bd) * (8 * np.pi * f_i * ad)/(x_i * (10 ** (-3))))
+cavg = statistics.mean(cspeeds)
+cdev = statistics.stdev(cspeeds)
+print(cavg, "+/-", cdev)
+
+plt.scatter(f, cspeeds, color = 'black', label = "Measured Speeds")
+cact = []
+for i in range(len(f)):
+    cact = np.append(cact, 299792458)
+plt.plot(f, cact, label = "Speed of Light")
+plt.xlabel("Mirror Rotation Frequency (Hz)")
+plt.ylabel("Speed (m/s)")
+plt.legend()
+plt.savefig("Measured_Speeds_vs_Actual_Speed")
+plt.show()
+plt.close()
